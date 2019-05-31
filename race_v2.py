@@ -95,6 +95,7 @@ class Game:
         self.stone_start_time = 0
         self.stone_num = 1
         # self.stone_collected = []
+        self.time_stone_speed = 3
 
         # game mode
         self.pause_flag = False
@@ -218,8 +219,8 @@ class Game:
     def _touch_stone(self):
         if self.playery < self.stone_starty+self.stone_height:
             if self.playerx  > self.stone_startx and self.playerx  < self.stone_startx + self.stone_width or self.playerx + car_width > self.stone_startx and self.playerx + car_width < self.stone_startx+self.stone_width:
+                self.draw_stone_flag = False
                 return True
-
         return False
         
     def game_loop(self):
@@ -304,7 +305,10 @@ class Game:
         self.things_dodged(self.score)
         self.draw_high()
         self.draw_collected_stones()
-        self.obstacle_starty += self.obstacle_speed
+        if self.stone_flag and self.stone_num ==6:
+            self.obstacle_starty += self.time_stone_speed
+        else:
+            self.obstacle_starty += self.obstacle_speed
         if self.info_flag:
             self.draw_info()
 
@@ -325,6 +329,7 @@ class Game:
             self.__init__()
 
 
+
         #####################################################
         # Stone function                                    #
         ##################################################### 
@@ -338,7 +343,7 @@ class Game:
         #     self.stone_starty += self.stone_speed
 
         # second version, which needs to collect the stone
-        if self.score % 5 ==0 and self.score != 0 and self.score !=70:
+        if self.score % 3 ==0 and self.score != 0 and self.score !=70:
             self.draw_stone_flag = True
         if self.draw_stone_flag:
             # if self.stone_num in self.stone_collected:
@@ -368,8 +373,13 @@ class Game:
             SCREEN.blit(text_surface, text_rect)
         # touch stone 
         if self._touch_stone():
+            # need to be the first, in order to erase the stone
+            self.draw_stone_flag = False            # when stone touched, no need to draw stones
+            self.stone_starty = 0 - self.stone_height
+            self.stone_startx = random.randrange(0,display_width - self.stone_width)
             # The collect stone function
-            if not self.stone_flag:                     # self._touch_stone() remains quite a while, in order not to collected too many stones at a time
+            # if not self.stone_flag:                     # self._touch_stone() remains quite a while, in order not to collected too many stones at a time
+            if not self.draw_stone_flag:                     # self._touch_stone() remains quite a while, in order not to collected too many stones at a time
                 if self.stone_num ==6:                  # to define which stones to fall
                     # win the game
                     if self.score > High_int:
@@ -378,6 +388,7 @@ class Game:
                     self.show_thanos()
                     self.__init__()
                 elif self.stone_num != 6:
+                    time.sleep(0.1)
                     self.stone_num += 1
                     # collect stones
                     # print("current",self.stone_num, "collected", self.stone_collected)
@@ -385,7 +396,6 @@ class Game:
                     #     self.stone_collected.append(self.stone_num)
                 
             self.stone_flag = True                  # stone mode flag on, in order not to die
-            self.draw_stone_flag = False            # when stone touched, no need to draw stones
             self.stone_start_time = time.time()
         
         if not self._touch_stone():
