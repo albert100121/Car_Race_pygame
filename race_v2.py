@@ -96,6 +96,8 @@ class Game:
         self.stone_num = 1
         # self.stone_collected = []
         self.time_stone_speed = 3
+        self.power_stone_speed = -5
+        self.space_stone_speed = 0
 
         # game mode
         self.pause_flag = False
@@ -126,6 +128,7 @@ class Game:
         else:
             car_en = pygame.image.load("img/cars/car_en_noback.png")
 
+    # Read the highest score from the text file ########################
     def read_high(self):
         global High_str
         global High_int    
@@ -139,47 +142,41 @@ class Game:
             High_int = 0
             High_str = str(High_int)
 
-    
+    # flip the background road up-side-down ##########################
     def flip_road(self):
-        # flip the background road up-side-down
         global road
         road = pygame.transform.flip(road, False, True)
 
+    # Show the messages when the car crashes    ######################
     def show_crash_msg(self):
         def text_objects(text, font):
             ts = font.render(text, True, red)
             return ts, ts.get_rect()
-        
-        # Show End Game text for 1 second
-        # text = "End Game!!!"
-        # large_text = pygame.font.Font("freesansbold.ttf", 115)
-        # text_surface, text_rect = text_objects(text, large_text)
-        # text_rect.center = (display_width/2, display_height/2)
-        # SCREEN.blit(text_surface, text_rect)
 
-        # pygame.display.update()
         time.sleep(1)
-
         SCREEN.blit(End, (0,0))
         pygame.display.update()
         time.sleep(2)
 
         self.game_loop()
-    
+
+    # Show the thanos of inevitable
     def show_thanos(self):
         SCREEN.blit(thanos, (0,0))
         pygame.display.update()
         time.sleep(2)
         self.game_loop()
 
+    # Successfully dodged the enemy
     def things_dodged(self, count):
-        # font = pygame.font.SysFont(None, 35)
+        # font = pygame.font.SysFont(None, 35)          # Can't compile into exe file if SysFont is None
         font = pygame.font.SysFont('arial', 35)
         text = font.render("Score: "+str(count), True, red)
         SCREEN.blit(text,(50,0))
         info = pygame.font.Font("freesansbold.ttf", 20).render("Info: i", True, white)
         SCREEN.blit(info, (50, 50))
-    
+
+    # Draw the information key on the left top
     def draw_info(self):
         info = pygame.font.Font("freesansbold.ttf", 20).render("Pause: p", True, white)
         SCREEN.blit(info, (50, 75))
@@ -190,6 +187,7 @@ class Game:
         info = pygame.font.Font("freesansbold.ttf", 20).render("Skip to End: spacebar", True, white)
         SCREEN.blit(info, (50, 150))
     
+    # Draw the highest score on the right top of the screen
     def draw_high(self):
         global High_str
         global display_width
@@ -198,16 +196,15 @@ class Game:
         text = font.render("Highest Score: "+ High_str, True, red)
         SCREEN.blit(text,(display_width -250,0))
     
+    # Draw the stones I've collected so far
     def draw_collected_stones(self):
         for i in range(1, self.stone_num):
             col = pygame.image.load("img/stones/stone%d.png"%i)
             SCREEN.blit(col,(150+(50*i),0))
 
-    def draw_things(self, thingx, thingy, thingw, thingh, color):
-        pygame.draw.rect(SCREEN, color, [thingx, thingy, thingw, thingh])
-
+    # Define when it's crashed
     def _is_crash(self):
-        if self.stone_flag:
+        if self.stone_flag and self.stone_num != 6:
             return False
         if self.playerx  > display_width - car_width or self.playerx  < 0:
             return True
@@ -216,13 +213,15 @@ class Game:
             if self.playerx  > self.obstacle_startx and self.playerx  < self.obstacle_startx + self.obstacle_width or self.playerx + car_width > self.obstacle_startx and self.playerx + car_width < self.obstacle_startx+self.obstacle_width:
                 return True
 
+    # Define the situation of touching the stones
     def _touch_stone(self):
         if self.playery < self.stone_starty+self.stone_height:
             if self.playerx  > self.stone_startx and self.playerx  < self.stone_startx + self.stone_width or self.playerx + car_width > self.stone_startx and self.playerx + car_width < self.stone_startx+self.stone_width:
                 self.draw_stone_flag = False
                 return True
         return False
-        
+    
+    # The loop of the game
     def game_loop(self):
         game_exit = False
 
@@ -263,17 +262,18 @@ class Game:
                         High_int = 0
                         High_str = "0"
                     elif event.key == pygame.K_p:
+                        # Add the pause key 
                         if self.pause_flag == False:
                             self.pause_flag = True
                         elif self.pause_flag == True:
                             self.pause_flag = False
                     elif event.key == pygame.K_i:
+                        # Add the show/hide information key
                         if self.info_flag:
                             self.info_flag = False
                         else:
                             self.info_flag = True
                     
-
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                         # Dont move
@@ -287,9 +287,9 @@ class Game:
     def frame(self, input_actions):
         self.playerx += self.playerx_displacement
         
-        SCREEN.fill(white)
+        # fill the window background with road
         SCREEN.blit(road, (0,0))
-        # self.flip_road(road)
+        # Calculate the time of the game and flips the road
         f = pygame.time.get_ticks()
         if f % 2 ==0:
             self.flip_road()
@@ -305,27 +305,35 @@ class Game:
         self.things_dodged(self.score)
         self.draw_high()
         self.draw_collected_stones()
+
+        # Time stone and power stone effect
         if self.stone_flag and self.stone_num ==6:
-            self.obstacle_starty += self.time_stone_speed
+            self.obstacle_starty += self.time_stone_speed       # Slow down the car
+        elif self.stone_flag and self.stone_num == 4:
+            self.obstacle_starty += self.power_stone_speed      # Move car up
+        # elif self.stone_flag and self.stone_num ==2:
+        #     self.obstacle_starty += self.space_stone_speed
         else:
-            self.obstacle_starty += self.obstacle_speed
+            self.obstacle_starty += self.obstacle_speed         # origin car speed
+
+        # if the info is clicked, write out the info
         if self.info_flag:
             self.draw_info()
 
+        # if the enemy is out of the screen, move back up
         if self.obstacle_starty > display_height:
             self.obstacle_starty = 0 - self.obstacle_height
             self.obstacle_startx = random.randrange(0,display_width - self.obstacle_width)
             self.score += 1
             # to increase obstacle speed
-            self.obstacle_speed += 0.3
-            # to increase the width of obstacle
-            # self.obstacle_width += (self.score * 1.2)        
-        
+            self.obstacle_speed += 0.3      
+
+        # if the car crashes
         if self._is_crash():
-            if self.score > High_int:
+            if self.score > High_int:           # save the score
                 with open("highest.txt", "w") as High:
                     High.write(str(self.score))
-            self.show_crash_msg()
+            self.show_crash_msg()               # Show avengers
             self.__init__()
 
 
@@ -343,26 +351,27 @@ class Game:
         #     self.stone_starty += self.stone_speed
 
         # second version, which needs to collect the stone
-        if self.score % 3 ==0 and self.score != 0 and self.score !=70:
-            self.draw_stone_flag = True
-        if self.draw_stone_flag:
+        if self.score % 5 ==0 and self.score != 0 and self.score !=70:      # when score %5 == 0, draw stone
+            if not self.draw_stone_flag and not self.stone_flag:            # at that time zone ,no matter touch or not, will keep drawing, so avoid drawing by stone_flag on
+                self.draw_stone_flag = True
+        if not self.draw_stone_flag:                                        # if not able to draw_stone, move stone back up
+            self.stone_starty = 0 - self.stone_height
+            self.stone_startx = random.randrange(0,display_width - self.stone_width)
+        if self.draw_stone_flag and not self._touch_stone():                # start drawing stones, but not at touching moment
             # if self.stone_num in self.stone_collected:
             #     self.stone_num +=1
             self.draw_stone(self.stone_startx, self.stone_starty, self.stone_num)
             self.stone_starty += self.stone_speed
-        if not self.draw_stone_flag:
-            self.stone_starty = 0 - self.stone_height
-            self.stone_startx = random.randrange(0,display_width - self.stone_width)
         
-        # stone reach bottom
-        if self.stone_starty > display_height:
+        
+        # stone reach bottom ############################
+        if self.stone_starty > display_height:                              # when stone is over bottom line, 
             self.stone_starty = 0 - self.stone_height
             self.stone_startx = random.randrange(0,display_width - self.stone_width)
             self.draw_stone_flag = False
-            # to increase obstacle speed
-            # self.stone_speed += 0.5
-        # stone mode
-        if self.stone_flag:
+
+        # stone mode ###################################
+        if self.stone_flag:                                 # if stone_flag on, the effects remains 
             def text_objects(text, font):
                 ts = font.render(text, True, red)
                 return ts, ts.get_rect()
@@ -371,15 +380,25 @@ class Game:
             text_surface, text_rect = text_objects(text, large_text)
             text_rect.center = (display_width/2, display_height/2)
             SCREEN.blit(text_surface, text_rect)
-        # touch stone 
+        # touch stone #############################################
         if self._touch_stone():
             # need to be the first, in order to erase the stone
-            self.draw_stone_flag = False            # when stone touched, no need to draw stones
-            self.stone_starty = 0 - self.stone_height
-            self.stone_startx = random.randrange(0,display_width - self.stone_width)
+            # self.draw_stone_flag = False            # when stone touched, no need to draw stones
+            # self.stone_starty = 0 - self.stone_height
+            # self.stone_startx = random.randrange(0,display_width - self.stone_width)
+
+            # The space effect ################
+            if self.stone_num ==1:
+                self.obstacle_startx = 0
+                self.obstacle_starty = 300
+            # The reality effect #####################
+            if self.stone_num ==2:
+                self.score += 10    
+      
+
             # The collect stone function
-            # if not self.stone_flag:                     # self._touch_stone() remains quite a while, in order not to collected too many stones at a time
-            if not self.draw_stone_flag:                     # self._touch_stone() remains quite a while, in order not to collected too many stones at a time
+            if not self.stone_flag:                     # self._touch_stone() remains quite a while, in order not to collected too many stones at a time
+            # if not self.draw_stone_flag:                     # self._touch_stone() remains quite a while, in order not to collected too many stones at a time
                 if self.stone_num ==6:                  # to define which stones to fall
                     # win the game
                     if self.score > High_int:
@@ -388,7 +407,6 @@ class Game:
                     self.show_thanos()
                     self.__init__()
                 elif self.stone_num != 6:
-                    time.sleep(0.1)
                     self.stone_num += 1
                     # collect stones
                     # print("current",self.stone_num, "collected", self.stone_collected)
@@ -397,11 +415,16 @@ class Game:
                 
             self.stone_flag = True                  # stone mode flag on, in order not to die
             self.stone_start_time = time.time()
+
+        if not self.stone_flag:
+            if self.stone_num == 4:
+                self.obstacle_speed = 10
         
         if not self._touch_stone():
             if (time.time() - self.stone_start_time) > 3:
                 self.stone_flag = False
         
+    
         # Show thanos when game ended
         if self.score >= 70:
             if self.score > High_int:
