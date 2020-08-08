@@ -81,13 +81,15 @@ class Game:
         self.obstacle_height = en_height
 
         # stone inti position
-        self.stone_starty = -600
-        self.stone_startx = random.randrange(0, display_width)
-        while self.stone_startx >= self.obstacle_startx and self.stone_startx <= self.obstacle_startx + self.obstacle_width:
-            self.stone_startx = random.randrange(0, display_width)
         self.stone_speed = 10
         self.stone_width = 50
         self.stone_height = 50
+        self.stone_starty = -600
+        self.stone_startx = random.randrange(0, display_width)
+        # while self.stone_startx >= self.obstacle_startx and self.stone_startx <= self.obstacle_startx + self.obstacle_width:
+        while (self.stone_startx >= self.obstacle_startx and self.stone_startx <= self.obstacle_startx + self.obstacle_width) or (self.stone_startx + self.stone_width >= self.obstacle_startx and self.stone_startx +self.stone_width <= self.obstacle_startx + self.obstacle_width):
+            self.stone_startx = random.randrange(0, display_width)
+
         self.draw_stone_flag = False
 
         # stone mode
@@ -182,7 +184,7 @@ class Game:
         SCREEN.blit(info, (50, 75))
         info = pygame.font.Font("freesansbold.ttf", 20).render("Quit: q", True, white)
         SCREEN.blit(info, (50, 100))
-        info = pygame.font.Font("freesansbold.ttf", 20).render("Reset High: r", True, white)
+        info = pygame.font.Font("freesansbold.ttf", 20).render("Clean High: c", True, white)
         SCREEN.blit(info, (50, 125))
         info = pygame.font.Font("freesansbold.ttf", 20).render("Skip to End: spacebar", True, white)
         SCREEN.blit(info, (50, 150))
@@ -216,7 +218,7 @@ class Game:
     # Define the situation of touching the stones
     def _touch_stone(self):
         if self.playery < self.stone_starty+self.stone_height:
-            if self.playerx  > self.stone_startx and self.playerx  < self.stone_startx + self.stone_width or self.playerx + car_width > self.stone_startx and self.playerx + car_width < self.stone_startx+self.stone_width:
+            if (self.playerx  > self.stone_startx and self.playerx  < (self.stone_startx + self.stone_width)) or (self.playerx + car_width > self.stone_startx and self.playerx + car_width < (self.stone_startx+self.stone_width)):
                 self.draw_stone_flag = False
                 return True
         return False
@@ -253,7 +255,7 @@ class Game:
                         # Force quit
                         pygame.quit()
                         quit()
-                    elif event.key == pygame.K_r:
+                    elif event.key == pygame.K_c:
                         # Force reset highest score
                         global High_int
                         global High_str
@@ -280,11 +282,11 @@ class Game:
                         self.actions[self.PLAYER_LEFT_MOVE] = 0
                         self.actions[self.PLAYER_RIGHT_MOVE] = 0
                         self.playerx_displacement = 0
-            self.frame(1)
+            self.frame()
         pygame.quit()
         quit()
 
-    def frame(self, input_actions):
+    def frame(self):
         self.playerx += self.playerx_displacement
         
         # fill the window background with road
@@ -356,7 +358,10 @@ class Game:
                 self.draw_stone_flag = True
         if not self.draw_stone_flag:                                        # if not able to draw_stone, move stone back up
             self.stone_starty = 0 - self.stone_height
-            self.stone_startx = random.randrange(0,display_width - self.stone_width)
+            # self.stone_startx = random.randrange(0,display_width - self.stone_width)
+            # while self.stone_startx >= self.obstacle_startx and self.stone_startx <= self.obstacle_startx + self.obstacle_width:
+            while (self.stone_startx >= self.obstacle_startx and self.stone_startx <= self.obstacle_startx + self.obstacle_width) or (self.stone_startx + self.stone_width >= self.obstacle_startx and self.stone_startx +self.stone_width <= self.obstacle_startx + self.obstacle_width):
+                self.stone_startx = random.randrange(0, display_width)
         if self.draw_stone_flag and not self._touch_stone():                # start drawing stones, but not at touching moment
             # if self.stone_num in self.stone_collected:
             #     self.stone_num +=1
@@ -366,9 +371,11 @@ class Game:
         
         # stone reach bottom ############################
         if self.stone_starty > display_height:                              # when stone is over bottom line, 
-            self.stone_starty = 0 - self.stone_height
-            self.stone_startx = random.randrange(0,display_width - self.stone_width)
             self.draw_stone_flag = False
+            self.stone_starty = 0 - self.stone_height
+            # self.stone_startx = random.randrange(0,display_width - self.stone_width)
+            while (self.stone_startx >= self.obstacle_startx and self.stone_startx <= self.obstacle_startx + self.obstacle_width) or (self.stone_startx + self.stone_width >= self.obstacle_startx and self.stone_startx +self.stone_width <= self.obstacle_startx + self.obstacle_width):
+                self.stone_startx = random.randrange(0, display_width)
 
         # stone mode ###################################
         if self.stone_flag:                                 # if stone_flag on, the effects remains 
@@ -416,9 +423,9 @@ class Game:
             self.stone_flag = True                  # stone mode flag on, in order not to die
             self.stone_start_time = time.time()
 
-        if not self.stone_flag:
-            if self.stone_num == 4:
-                self.obstacle_speed = 10
+        # if not self.stone_flag:
+        #     if self.stone_num == 4:
+        #         self.obstacle_speed = 10
         
         if not self._touch_stone():
             if (time.time() - self.stone_start_time) > 3:
@@ -454,6 +461,6 @@ class Game:
         pygame.display.update()
         clock.tick(self.FPS) # Frames per second
 
-
-g = Game()
-g.game_loop()
+if __name__ == "__main__":
+    g = Game()
+    g.game_loop()
