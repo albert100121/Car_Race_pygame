@@ -1,6 +1,6 @@
-# import numpy as np 
-import os 
-import sys 
+import os
+import sys
+
 from PIL import Image
 
 im_me = Image.open('img/source_img/car_me.jpg')
@@ -25,10 +25,6 @@ im_En4 = Image.open('img/source_img/spider.png')
 im_En5 = Image.open('img/source_img/cap.png')
 im_En6 = Image.open('img/source_img/iron.png')
 
-
-
-
-
 new_im_me = im_me.resize((50, 100), Image.ANTIALIAS)
 new_im_thanos_car = im_thanos_car.resize((50, 100), Image.ANTIALIAS)
 new_im_en = im_en.resize((50, 100), Image.ANTIALIAS)
@@ -50,7 +46,6 @@ new_im_En4 = im_En4.resize((50, 100), Image.ANTIALIAS)
 new_im_En5 = im_En5.resize((50, 100), Image.ANTIALIAS)
 new_im_En6 = im_En6.resize((50, 100), Image.ANTIALIAS)
 new_im_ironman = im_ironman.resize((800, 600), Image.ANTIALIAS)
-
 
 new_im_en.save("img/source_img/car_enemy.png")
 new_im_me.save("img/source_img/car_me.png")
