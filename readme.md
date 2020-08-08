@@ -2,6 +2,7 @@
 ## Project Name: Thanos and his happy colleages
 
 <img src='img/Demo.gif'>
+
 ## Overview
 This is a car race game where the user represents Thanos who races against the Avengers. Once you defeat seven avangers or you collect six infinity stones, you win the game. In this game, you can collect infinity stones with different powers which help you achieve your goal. Different infinity stones have different powers. **Use Them Well!!!** Different cars represent different characters. Come check it out.
 
